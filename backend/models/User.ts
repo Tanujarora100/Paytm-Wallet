@@ -11,11 +11,7 @@ const userSchema = new Schema<IUser>({
     type: String,
     required: true,
   },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-  },
+
   createdAt: {
     type: Date,
     default: Date.now,
