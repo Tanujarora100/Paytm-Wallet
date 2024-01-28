@@ -2,14 +2,12 @@ import { Router } from "express";
 import checkExistingUser from "../middleware/checkExistingUser";
 import userSchemaValidator from "../validation/userSignUpValidation";
 import User from "../models/User";
-import jwt_secret from "../config/jwt_secret";
-import { JWT_EXPIRY_SECONDS } from "../config/jwt_secret";
-import jwt, { Secret } from "jsonwebtoken";
 import logger from "../config/logger";
 import checkUserExist from "../middleware/checkUserExist";
 const userRouter = Router();
 import { Request, Response } from "express";
 import { validateUserSignIn } from "../validation/userSignInValidation";
+import signJWT from "../utils/jwtSignature";
 
 userRouter.get(
   "/signin",
@@ -20,15 +18,12 @@ userRouter.get(
       const user = await User.findOne({ username });
 
       if (user && user.password !== password) {
-        return res.send(400).json({ error: "Incorrect Password" });
+        return res.status(400).json({ error: "Incorrect Password" });
       }
       const userId = user?._id;
       logger.info(`User with ${username} send a request`);
-      const token = jwt.sign({ userId }, jwt_secret as unknown as Secret, {
-        expiresIn: JWT_EXPIRY_SECONDS,
-      });
+      const token = signJWT({ useId: userId });
       res.status(200).json({
-        message: "user signed in successfully",
         token: token,
       });
     } catch (err) {
@@ -37,7 +32,7 @@ userRouter.get(
     }
   },
 );
-
+// http://localhost:3000/api/v1/user/signup
 userRouter.post(
   "/signup",
   validateUserSignIn,
@@ -47,10 +42,11 @@ userRouter.post(
       const { username, password, firstname, lastname } = req.body;
       const { success } = userSchemaValidator.safeParse(req.body);
       if (!success) {
-        return res.send(411).json({
+        return res.status(411).json({
           message: "Incorrect Inputs",
         });
       }
+      //create a new User
       const newUser = await User.create({
         username: username,
         password: password,
@@ -58,12 +54,16 @@ userRouter.post(
         lastname: lastname,
       });
 
-      const userId = newUser._id;
-      logger.info(`User with ${username} created`);
-      const token = jwt.sign({ userId }, jwt_secret as unknown as Secret, {
-        expiresIn: JWT_EXPIRY_SECONDS,
-      });
+      //hash the password
+      newUser.password = newUser.hashPassword(password);
+      //using hashsync so it will return a string
 
+      //Save the user in DB
+
+      const token = signJWT({ userId: newUser._id });
+
+      //sign a jwt token and send it to the user.
+      logger.info(`User with ${newUser.username} created`);
       res.status(201).json({
         message: "user created successfully",
         token: token,

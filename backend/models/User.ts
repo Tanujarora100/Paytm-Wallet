@@ -1,6 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import IUser from "../interfaces/IUser";
 
+import bcrypt from "bcrypt";
 
 const userSchema = new Schema<IUser>({
   username: {
@@ -45,5 +46,15 @@ const userSchema = new Schema<IUser>({
     maxlength: 20,
   },
 });
+userSchema.methods.hashPassword = function (password: string) {
+  const saltRounds: number = 10;
+  const salt = bcrypt.genSaltSync(saltRounds);
+  const hashedPassword = bcrypt.hashSync(password, salt);
+  return hashedPassword;
+};
+
+userSchema.methods.comparePassword = function (password: string) {
+  return bcrypt.compareSync(password, this.password);
+};
 
 export default mongoose.model<IUser>("User", userSchema);

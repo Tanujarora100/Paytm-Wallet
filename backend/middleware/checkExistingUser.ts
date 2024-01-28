@@ -11,6 +11,7 @@ async function checkExistingUser(
   try {
     const existingUser = await User.findOne({ username });
     if (existingUser) {
+        logger.info(`User with ${username} sent a request`);
       return res.status(400).json({ error: "user already exist" });
     }
     next();

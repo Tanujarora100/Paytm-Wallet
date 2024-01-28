@@ -7,6 +7,8 @@ interface IUser extends Document {
   lastname:string;
   createdAt: Date;
   updatedAt: Date;
+  comparePassword(password: string): boolean;
+  hashPassword(password: string): string;
 }
 
 export default IUser;

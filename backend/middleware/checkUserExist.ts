@@ -1,6 +1,6 @@
+import { Request, Response, NextFunction } from "express";
 import User from "../models/User";
 import logger from "../config/logger";
-import { NextFunction, Request, Response } from "express";
 
 async function checkUserExist(req: Request, res: Response, next: NextFunction) {
   try {
@@ -8,13 +8,14 @@ async function checkUserExist(req: Request, res: Response, next: NextFunction) {
     const response = await User.findOne({ username });
 
     if (!response) {
-      return res.send(400).json({ error: "User does not exist" });
+      return res.status(400).json({ error: "User does not exist" });
     }
-    logger.info(`User with ${username} send a request`);
+
+    logger.info(`User with ${username} sent a request`);
     next();
   } catch (err) {
     logger.error(err);
-    return res.send(500).json({ error: "Server Error" });
+    return res.status(500).json({ error: "Server Error" });
   }
 }
 
