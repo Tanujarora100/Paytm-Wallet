@@ -11,7 +11,7 @@ import signJWT from "../utils/jwtSignature";
 import authenticateUser from "../middleware/Auth";
 import { userUpdateValidator } from "../validation/userUpdateValidation";
 import IUser from "../interfaces/IUser";
-
+import Account from "../models/Account";
 userRouter.get(
   "/signin",
   checkUserExist,
@@ -56,14 +56,17 @@ userRouter.post(
         firstname: firstname,
         lastname: lastname,
       });
-
+      const token = signJWT({ userId: newUser._id });
       //hash the password
       newUser.password = newUser.hashPassword(password);
+      const userAccount = await Account.create({
+        userId: newUser._id,
+        balanced: Math.random() * 1000,
+      });
+      //giving the userAccount some initial balance for mocking 
       //using hashsync so it will return a string
 
       //Save the user in DB
-
-      const token = signJWT({ userId: newUser._id });
 
       //sign a jwt token and send it to the user.
       logger.info(`User with ${newUser.username} created`);
@@ -113,7 +116,7 @@ userRouter.post(
   //get users with a specific substring in their username
   userRouter.get("/bulk", async (req: Request, res: Response) => {
     try {
-      const userSubstring = req.query.filter;
+      const userSubstring = req.query.filter || "";
       const users: IUser[] = await User.find({
         //basically an array of objects in which it will match the objects.
         $or: [
