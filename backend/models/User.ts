@@ -1,7 +1,9 @@
 import mongoose, { Schema } from "mongoose";
 import IUser from "../interfaces/IUser";
-
+import Account from "./Account";
 import bcrypt from "bcrypt";
+import { NextFunction } from "express";
+import logger from "../config/logger";
 
 const userSchema = new Schema<IUser>({
   username: {
@@ -52,8 +54,32 @@ userSchema.methods.hashPassword = function (password: string) {
   const hashedPassword = bcrypt.hashSync(password, salt);
   return hashedPassword;
 };
+userSchema.pre("deleteOne", function (next: NextFunction) {
+  const user = this as unknown as IUser;
+  Account.findOne({ userId: user._id })
+    .then((account) => {
+      if (account) {
+        Account.deleteOne({ userId: user._id });
+      }
+      next();
+    })
+    .catch(() => {
+      logger.info("Error while deleting account");
+    });
+});
 
-userSchema.methods.comparePassword = function (password: string) {
+userSchema.pre("save", function (next: NextFunction) {
+  const user = this as IUser;
+  user.password = user.hashPassword(user.password);
+  user.updatedAt = new Date();
+  Account.create({
+    userId: user._id,
+    balance: Math.floor(Math.random() * (1000 - 1 + 1)) + 1000,
+  });
+  next();
+});
+
+userSchema.methods.comparePassword =  function (password: string) {
   return bcrypt.compareSync(password, this.password);
 };
 
