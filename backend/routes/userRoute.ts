@@ -8,6 +8,9 @@ const userRouter = Router();
 import { Request, Response } from "express";
 import { validateUserSignIn } from "../validation/userSignInValidation";
 import signJWT from "../utils/jwtSignature";
+import authenticateUser from "../middleware/Auth";
+import { userUpdateValidator } from "../validation/userUpdateValidation";
+import IUser from "../interfaces/IUser";
 
 userRouter.get(
   "/signin",
@@ -73,6 +76,57 @@ userRouter.post(
       return res.status(500).json({ error: "Server Error" });
     }
   },
+
+  userRouter.put("/", authenticateUser, async (req: Request, res: Response) => {
+    const { success } = userUpdateValidator.safeParse(req.body);
+    if (!success) {
+      return res.status(411).json({
+        message: "Error while updating information",
+      });
+    }
+
+    try {
+      const updatedUser = await User.updateOne(
+        {
+          username: req.body.username,
+        },
+        { $set: req.body },
+      );
+
+      if (updatedUser.modifiedCount > 0) {
+        return res.status(200).json({
+          message: "User updated successfully",
+        });
+      } else {
+        return res.status(404).json({
+          message: "User not found",
+        });
+      }
+    } catch (err: any) {
+      return res.status(500).json({
+        message: "Internal server error",
+        err: err.message,
+      });
+    }
+  }),
+
+  //get users with a specific substring in their username
+  userRouter.get("/bulk", async (req: Request, res: Response) => {
+    try {
+      const userSubstring = req.query.filter;
+      const users: IUser[] = await User.find({
+        //basically an array of objects in which it will match the objects.
+        $or: [
+          { firstname: { $regex: userSubstring, $options: "i" } },
+          { lastname: { $regex: userSubstring, $options: "i" } },
+        ],
+      });
+      return res.status(200).json({ users });
+    } catch (err) {
+      logger.error(err);
+      return res.status(500).json({ error: "Server Error" });
+    }
+  }),
 );
 
 export default userRouter;

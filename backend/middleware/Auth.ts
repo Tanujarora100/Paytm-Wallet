@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { jwt_secret } from "../utils/jwtSignature";
-function verifyToken(req: Request, res: Response, next: NextFunction) {
+function authenticateUser(req: Request, res: Response, next: NextFunction) {
   // Get the authorization header from the request
   const authHeader = req.headers.authorization;
   // If the header is missing or doesn't start with "Bearer ", return an Unauthorized error
@@ -27,4 +27,4 @@ function verifyToken(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export default verifyToken;
+export default authenticateUser;
