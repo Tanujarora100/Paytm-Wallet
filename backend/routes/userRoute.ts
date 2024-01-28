@@ -121,7 +121,13 @@ userRouter.post(
           { lastname: { $regex: userSubstring, $options: "i" } },
         ],
       });
-      return res.status(200).json({ users });
+      return res.json({
+        users: users.map((user) => ({
+          username: user.username,
+          firstname: user.firstname,
+          lastname: user.lastname,
+        })),
+      });
     } catch (err) {
       logger.error(err);
       return res.status(500).json({ error: "Server Error" });
