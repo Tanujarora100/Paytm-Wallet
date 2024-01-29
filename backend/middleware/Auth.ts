@@ -10,10 +10,9 @@ function authenticateUser(req: Request, res: Response, next: NextFunction) {
   }
   // Extract the token from the header
   const token = authHeader.split(" ")[1];
-  // Verify the token using the jwt_secret and decode it
+ 
   try {
     const decoded = jwt.verify(token, jwt_secret) as JwtPayload;
-    // If the token is valid, set the username in the request body and call the next middleware
     if (decoded) {
       req.body.username = decoded.username;
       next();

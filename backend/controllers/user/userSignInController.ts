@@ -12,11 +12,11 @@ const userSignInController = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Incorrect Username" });
     }
     logger.info(`User with ${username} sent a correct username`);
-    const result = await user.comparePassword(password);
+    const result = user.comparePassword(password);
 
     if (!result) {
       logger.info(`User with ${username} sent an incorrect password`);
-      return res.status(400).json({ error: "Incorrect Password India" });
+      return res.status(400).json({ error: "Incorrect Password" });
     }
 
     const userId = user?._id;
