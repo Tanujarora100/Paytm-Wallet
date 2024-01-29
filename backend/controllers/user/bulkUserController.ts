@@ -2,6 +2,7 @@ import logger from "../../config/logger";
 import IUser from "../../interfaces/IUser";
 import User from "../../models/User";
 import { Request, Response } from "express";
+import StatusCode from "../../utils/statusCode";
 const getUsersController = async (req: Request, res: Response) => {
   try {
     const userSubstring = req.query.filter || "";
@@ -21,7 +22,9 @@ const getUsersController = async (req: Request, res: Response) => {
     });
   } catch (err) {
     logger.error(err);
-    return res.status(500).json({ error: "Server Error" });
+    return res
+      .status(StatusCode.INTERNAL_SERVER_ERROR)
+      .json({ error: responseMessages.SERVER_ERROR });
   }
 };
 

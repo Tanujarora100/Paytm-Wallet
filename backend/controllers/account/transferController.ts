@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import logger from "../../config/logger";
 import { Request, Response } from "express";
 import Account from "../../models/Account";
+import StatusCode from "../../utils/statusCode";
 
 // Define an asynchronous function to find an account by userId and session
 const findAccount = async (userId: string, session: mongoose.ClientSession) => {
@@ -30,7 +31,9 @@ const transferController = async function (req: Request, res: Response) {
     if (fromAccount.balance < amount) {
       logger.info(`Insufficient balance for ${from}`);
       await session.abortTransaction();
-      return res.status(400).json({ error: "Insufficient balance" });
+      return res
+        .status(StatusCode.BAD_REQUEST)
+        .json({ error: "Insufficient balance" });
     }
 
     // Perform transfer
@@ -41,16 +44,22 @@ const transferController = async function (req: Request, res: Response) {
     await toAccount.save({ session });
     await session.commitTransaction();
     logger.info(`Transfer request for ${from} to ${to} successful`);
-    res.status(200).json({ message: "Transfer successful" });
+    res.status(StatusCode.OK).json({ message: "Transfer successful" });
   } catch (err) {
     await session.abortTransaction();
     if (err instanceof Error) {
       logger.info(`Transfer request failed for ${err.message}`);
       res
-        .status(err.message === "User not found" ? 404 : 500)
+        .status(
+          err.message === "User not found"
+            ? StatusCode.NOT_FOUND
+            : StatusCode.INTERNAL_SERVER_ERROR,
+        )
         .json({ error: err.message });
     } else {
-      res.status(500).json({ error: "Server Error" });
+      res
+        .status(StatusCode.INTERNAL_SERVER_ERROR)
+        .json({ error: "Server Error" });
     }
   } finally {
     session.endSession();

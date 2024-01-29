@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 
 import logger from "../../config/logger";
 import Account from "../../models/Account";
+import StatusCode from "../../utils/statusCode";
 
 const balanceController = async (req: Request, res: Response) => {
   try {
@@ -9,7 +10,7 @@ const balanceController = async (req: Request, res: Response) => {
 
     const account = await Account.findOne({ userId: req.body.username });
     if (account) {
-      return res.status(200).json({ balance: account.balance });
+      return res.status(StatusCode.OK).json({ balance: account.balance });
     } else {
       logger.info(`No Existing Account found for ${req.body.username}`);
       return res.status(404).json({ error: "User not found" });

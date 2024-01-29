@@ -4,8 +4,9 @@ import User from "../../models/User";
 import signJWT from "../../utils/jwtSignature";
 import userSchemaValidator from "../../validation/userSignUpValidation";
 import { Response, Request } from "express";
+import StatusCode from "../../utils/statusCode";
 
-const userSignUpController=async (req: Request, res: Response) => {
+const userSignUpController = async (req: Request, res: Response) => {
   const session = mongoose.startSession();
   try {
     (await session).startTransaction();
@@ -13,8 +14,8 @@ const userSignUpController=async (req: Request, res: Response) => {
     const { username, password, firstname, lastname } = req.body;
     const { success } = userSchemaValidator.safeParse(req.body);
     if (!success) {
-      return res.status(411).json({
-        message: "Incorrect Inputs",
+      return res.status(StatusCode.BAD_REQUEST).json({
+        message: responseMessages.BAD_REQUEST,
       });
     }
     logger.info("input validation completed");
@@ -34,15 +35,15 @@ const userSignUpController=async (req: Request, res: Response) => {
 
     (await session).commitTransaction();
     logger.info("Transaction committed");
-    res.status(201).json({
-      message: "user created successfully",
+    res.status(StatusCode.CREATED).json({
+      message: responseMessages.SUCCESS,
       token: token,
     });
   } catch (err) {
     (await session).abortTransaction();
     logger.info("Transaction aborted");
     logger.info(err);
-    return res.status(500).json({ error: "Server Error" });
+    return res.status(StatusCode.INTERNAL_SERVER_ERROR).json({ error: responseMessages.SERVER_ERROR });
   } finally {
     logger.info("Transaction completed");
     (await session).endSession();
