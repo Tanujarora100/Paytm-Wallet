@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    /* Projects */
+    /* Language and Environment */
+    "target": "es2016",                                  /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
+
+    /* Modules */
+    "module": "commonjs",                                /* Specify what module code is generated. */
+    "types": [
+      "node",
+      
+    ],                                      /* Specify type package names to be included without being referenced in a source file. */
+
+    /* Strict */
+    "noImplicitAny": true,                             /* Report an error when a variable declaration is initialized to 'undefined'. */
+    "esModuleInterop": true,                          
+    "forceConsistentCasingInFileNames": true,           
+    "strictNullChecks": true,                         /* When type checking, take into account 'null' and 'undefined'. */
+   
+    "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
+  }
+}
